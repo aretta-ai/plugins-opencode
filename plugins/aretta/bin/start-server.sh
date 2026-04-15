@@ -7,7 +7,7 @@ set -e
 
 ARETTA_BIN="${HOME}/.aretta/bin"
 BINARY="$ARETTA_BIN/aretta-proof-mcp"
-PROOF_MCP_VERSION="0.3.2"
+PROOF_MCP_VERSION="0.3.3"
 MUTAGEN_VERSION="0.17.6"
 WS_BRIDGE_VERSION="1.0.0"
 
@@ -31,6 +31,10 @@ if [ ! -f "$BINARY" ] || [ "$CURRENT_VERSION" != "$PROOF_MCP_VERSION" ]; then
     exit 1
   fi
   chmod +x "$BINARY"
+  # Re-sign on macOS — downloaded binaries have invalid signatures that cause silent crashes
+  if [ "$OS" = "darwin" ] && command -v codesign >/dev/null 2>&1; then
+    codesign --force --sign - "$BINARY" 2>/dev/null || true
+  fi
   echo "$PROOF_MCP_VERSION" > "$VERSION_FILE"
   echo "aretta-proof-mcp v${PROOF_MCP_VERSION} installed" >&2
 fi
